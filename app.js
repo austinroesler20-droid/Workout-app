@@ -16,9 +16,51 @@ let volumeChart = null;
 let liftChart   = null;
 let isViewOnly  = false;
 
+// ── JSONBin Cloud Sync ────────────────────────────────
+const JSONBIN_BIN_ID  = '6a2d691ada38895dfeba5451';
+const JSONBIN_API_KEY = '$2a$10$f4VXQRC9w/7slqzM33xbHuCBuYX.9HDxFMgZ4g7dkQ3U9oStRiTr6';
+
+async function loadFromCloud() {
+    try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+            headers: { 'X-Master-Key': JSONBIN_API_KEY }
+        });
+        if (!res.ok) return;
+        const json  = await res.json();
+        const cloud = json.record;
+        if (cloud.strengthTrackerData) localStorage.setItem('strengthTrackerData', JSON.stringify(cloud.strengthTrackerData));
+        if (cloud.warmupValues)        localStorage.setItem('warmupValues',         JSON.stringify(cloud.warmupValues));
+        if (cloud.workoutStats)        localStorage.setItem('workoutStats',         JSON.stringify(cloud.workoutStats));
+        if (cloud.goalsData)           localStorage.setItem('goalsData',            JSON.stringify(cloud.goalsData));
+        if (cloud.redLightData)        localStorage.setItem('redLightData',         JSON.stringify(cloud.redLightData));
+        if (cloud.prLog)               localStorage.setItem('prLog',                JSON.stringify(cloud.prLog));
+    } catch (e) {
+        console.warn('Cloud load failed, using local data', e);
+    }
+}
+
+async function saveToCloud() {
+    try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+            method:  'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            body:    JSON.stringify({
+                strengthTrackerData: JSON.parse(localStorage.getItem('strengthTrackerData') || '{"workouts":[]}'),
+                warmupValues:        JSON.parse(localStorage.getItem('warmupValues')         || '{}'),
+                workoutStats:        JSON.parse(localStorage.getItem('workoutStats')         || '{"sessions":[]}'),
+                goalsData:           JSON.parse(localStorage.getItem('goalsData')            || '[]'),
+                redLightData:        JSON.parse(localStorage.getItem('redLightData')         || '[]'),
+                prLog:               JSON.parse(localStorage.getItem('prLog')                || '[]')
+            })
+        });
+    } catch (e) {
+        console.warn('Cloud save failed', e);
+    }
+}
+
 // ── Startup ───────────────────────────────────────────
 
-window.addEventListener('load', function () {
+window.addEventListener('load', async function () {
     const params = new URLSearchParams(window.location.search);
     if (params.has('view')) {
         isViewOnly = true;
@@ -29,6 +71,7 @@ window.addEventListener('load', function () {
         }
         enterViewMode();
     } else {
+        await loadFromCloud();
         checkAuth();
     }
 });
@@ -127,6 +170,7 @@ function saveWarmupValues() {
         row:  document.getElementById('warmup-row').value,
         sled: document.getElementById('warmup-sled').value
     }));
+    saveToCloud();
 }
 
 // ── Page Navigation ───────────────────────────────────
@@ -342,6 +386,7 @@ function storePRs(prs, date) {
     const stored = JSON.parse(localStorage.getItem('prLog') || '[]');
     prs.forEach(pr => stored.push({ ...pr, date }));
     localStorage.setItem('prLog', JSON.stringify(stored));
+    saveToCloud();
 }
 
 function showPRModal(prs) {
@@ -565,7 +610,7 @@ function renderMusicCorrelation() {
 }
 
 function loadStatsData()    { return JSON.parse(localStorage.getItem('workoutStats') || '{"sessions":[]}'); }
-function saveStatsData(d)   { localStorage.setItem('workoutStats', JSON.stringify(d)); }
+function saveStatsData(d)   { localStorage.setItem('workoutStats', JSON.stringify(d)); saveToCloud(); }
 
 // ── Weekly Summary ────────────────────────────────────
 
@@ -666,7 +711,7 @@ function renderGoalsList() {
 }
 
 function loadGoalsData()   { return JSON.parse(localStorage.getItem('goalsData') || '[]'); }
-function saveGoalsData(d)  { localStorage.setItem('goalsData', JSON.stringify(d)); }
+function saveGoalsData(d)  { localStorage.setItem('goalsData', JSON.stringify(d)); saveToCloud(); }
 
 // ── Red Light Therapy ─────────────────────────────────
 
@@ -724,9 +769,9 @@ function renderRedLightTable() {
 }
 
 function loadRedLightData()   { return JSON.parse(localStorage.getItem('redLightData') || '[]'); }
-function saveRedLightData(d)  { localStorage.setItem('redLightData', JSON.stringify(d)); }
+function saveRedLightData(d)  { localStorage.setItem('redLightData', JSON.stringify(d)); saveToCloud(); }
 
 // ── Storage ───────────────────────────────────────────
 
 function loadData()    { if (isViewOnly && window._sharedData) return window._sharedData; return JSON.parse(localStorage.getItem('strengthTrackerData') || '{"workouts":[]}'); }
-function saveData(d)   { localStorage.setItem('strengthTrackerData', JSON.stringify(d)); }
+function saveData(d)   { localStorage.setItem('strengthTrackerData', JSON.stringify(d)); saveToCloud(); }
