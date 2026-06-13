@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strength Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Auth Overlay -->
+<div id="auth-overlay" class="auth-overlay">
+    <div id="screen-set" class="auth-card">
+        <div class="auth-logo">ST</div>
+        <h2>Create Your Password</h2>
+        <p>This protects your workouts from being edited by others.</p>
+        <input type="password" id="set-pw" placeholder="Choose a password" autocomplete="new-password">
+        <input type="password" id="set-pw-confirm" placeholder="Confirm password" autocomplete="new-password"
+               onkeydown="if(event.key==='Enter') setPassword()">
+        <button class="auth-btn" onclick="setPassword()">Set Password</button>
+        <p class="auth-error" id="set-error"></p>
+    </div>
+    <div id="screen-login" class="auth-card" style="display:none">
+        <div class="auth-logo">ST</div>
+        <h2>Strength Tracker</h2>
+        <p>Enter your password to continue.</p>
+        <input type="password" id="login-pw" placeholder="Password" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter') login()">
+        <button class="auth-btn" onclick="login()">Log In</button>
+        <p class="auth-error" id="login-error"></p>
+    </div>
+</div>
+
+<!-- View-Only Banner -->
+<div id="view-banner" class="view-banner" style="display:none">View Only &mdash; shared snapshot</div>
+
+<!-- PR Celebration Modal -->
+<div id="pr-modal" class="modal-overlay" style="display:none" onclick="closePRModal()">
+    <div class="modal-card pr-card" onclick="event.stopPropagation()">
+        <div class="pr-fireworks">&#127881;</div>
+        <h2>New Personal Record!</h2>
+        <div id="pr-list" class="pr-list"></div>
+        <button class="auth-btn" onclick="closePRModal()">Keep Going!</button>
+    </div>
+</div>
+
+<!-- Weekly Summary Modal -->
+<div id="summary-modal" class="modal-overlay" style="display:none" onclick="closeSummaryModal()">
+    <div class="modal-card summary-card" onclick="event.stopPropagation()">
+        <h2>&#128197; Weekly Summary</h2>
+        <p class="summary-subtitle" id="summary-dates"></p>
+        <div class="summary-grid" id="summary-grid"></div>
+        <button class="auth-btn" onclick="closeSummaryModal()">Close</button>
+    </div>
+</div>
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">ST</div>
+            <span class="logo-text">Strength<br>Tracker</span>
+        </div>
+        <button class="nav-item active" data-page="workout" onclick="showPage('workout')">
+            <span class="nav-icon">&#127947;</span>
+            <span class="nav-label">Workout</span>
+        </button>
+        <button class="nav-item" data-page="volume" onclick="showPage('volume')">
+            <span class="nav-icon">&#128202;</span>
+            <span class="nav-label">Total Volume</span>
+        </button>
+        <button class="nav-item" data-page="bylift" onclick="showPage('bylift')">
+            <span class="nav-icon">&#128200;</span>
+            <span class="nav-label">By Lift</span>
+        </button>
+        <button class="nav-item" data-page="stats" onclick="showPage('stats')">
+            <span class="nav-icon">&#128203;</span>
+            <span class="nav-label">Session Stats</span>
+        </button>
+        <button class="nav-item" data-page="goals" onclick="showPage('goals')">
+            <span class="nav-icon">&#127919;</span>
+            <span class="nav-label">Goals</span>
+        </button>
+        <button class="nav-item" data-page="redlight" onclick="showPage('redlight')">
+            <span class="nav-icon">&#128308;</span>
+            <span class="nav-label">Red Light</span>
+        </button>
+        <div class="sidebar-footer">
+            <button class="summary-btn" id="summary-btn" onclick="showWeeklySummary()" style="display:none">
+                &#128197; Weekly Summary
+            </button>
+            <button class="share-btn" id="share-btn" onclick="generateShareLink()" style="display:none">
+                &#128279; Share Progress
+            </button>
+            <button class="logout-btn" id="logout-btn" onclick="logout()" style="display:none">Log Out</button>
+        </div>
+    </nav>
+
+    <main class="content">
+
+        <!-- ── WORKOUT ── -->
+        <div id="page-workout" class="page active">
+            <div class="page-header">
+                <div>
+                    <h1>Workout</h1>
+                    <div id="current-date" class="page-date"></div>
+                </div>
+                <div id="streak-badge" class="streak-badge" style="display:none">
+                    <span class="streak-flame">&#128293;</span>
+                    <span id="streak-count">0</span>
+                    <span class="streak-label">day streak</span>
+                </div>
+            </div>
+
+            <section class="warmup">
+                <h2>Warmup</h2>
+                <ol>
+                    <li>
+                        <span class="warmup-name">Row — 5 minutes</span>
+                        <div class="warmup-weight">
+                            <input type="number" id="warmup-row" class="warmup-input" min="1" max="20" step="1" placeholder="10">
+                            <span class="warmup-unit">resistance</span>
+                        </div>
+                    </li>
+                    <li>Light Stretching — 5 minutes</li>
+                    <li>
+                        <span class="warmup-name">Dead Hang Pull-Ups — 3 sets, 1 minute each</span>
+                        <span class="warmup-tag">Bodyweight</span>
+                    </li>
+                    <li>
+                        <span class="warmup-name">Sled Pull &amp; Push — 3 times each</span>
+                        <div class="warmup-weight">
+                            <input type="number" id="warmup-sled" class="warmup-input" min="0" step="5" placeholder="90">
+                            <span class="warmup-unit">lbs</span>
+                        </div>
+                    </li>
+                    <li>Walk on Hands — 3 minutes</li>
+                    <li>Ab Roller — 3 sets &times; 8 reps</li>
+                    <li>Reverse Step Ups — 3 sets</li>
+                </ol>
+            </section>
+
+            <div class="day-tabs">
+                <button class="tab active" onclick="selectDay(1)">Day 1</button>
+                <button class="tab" onclick="selectDay(2)">Day 2</button>
+                <button class="tab" onclick="selectDay(3)">Day 3</button>
+                <button class="tab" onclick="selectDay(4)">Day 4</button>
+                <button class="tab" onclick="selectDay(5)">Day 5</button>
+                <button class="tab" onclick="selectDay(6)">Day 6</button>
+            </div>
+            <div id="day-label" class="day-label"></div>
+            <section id="workout-section"></section>
+            <button class="save-btn" id="save-btn" onclick="saveWorkout()">Save Workout</button>
+        </div>
+
+        <!-- ── TOTAL VOLUME ── -->
+        <div id="page-volume" class="page">
+            <div class="page-header"><h1>Total Volume</h1><p class="page-subtitle">Combined weight lifted across every set, each session</p></div>
+            <div class="chart-card">
+                <div class="chart-container"><canvas id="volume-chart"></canvas></div>
+                <p class="chart-hint" id="volume-hint">Log and save a workout to see your volume here.</p>
+            </div>
+            <div class="table-card">
+                <h3>Session History</h3>
+                <div class="table-scroll">
+                    <table id="volume-table">
+                        <thead><tr><th>Date</th><th>Day</th><th>Focus</th><th>Total Volume (lbs)</th><th>Exercises</th></tr></thead>
+                        <tbody><tr class="empty-row"><td colspan="5">No sessions logged yet.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── BY LIFT ── -->
+        <div id="page-bylift" class="page">
+            <div class="page-header"><h1>By Lift</h1><p class="page-subtitle">Weight per set over time for each exercise</p></div>
+            <div class="chart-card">
+                <div class="progress-controls">
+                    <label class="select-label">Choose exercise</label>
+                    <select id="exercise-select" onchange="updateLiftPage()"></select>
+                </div>
+                <div class="chart-container"><canvas id="lift-chart"></canvas></div>
+                <p class="chart-hint" id="lift-hint">Select an exercise to see progress.</p>
+            </div>
+            <div class="table-card">
+                <h3 id="lift-table-title">Set History</h3>
+                <div class="table-scroll">
+                    <table id="lift-table">
+                        <thead><tr><th>Date</th><th>Set 1 (lbs)</th><th>Set 2 (lbs)</th><th>Set 3 (lbs)</th><th>Set 4 (lbs)</th><th>Max (lbs)</th><th>PR</th></tr></thead>
+                        <tbody><tr class="empty-row"><td colspan="7">No data yet.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SESSION STATS ── -->
+        <div id="page-stats" class="page">
+            <div class="page-header"><h1>Session Stats</h1><p class="page-subtitle">Log your workout metrics for each session</p></div>
+            <div class="stats-day-tabs">
+                <button class="tab active" onclick="selectStatsDay(1)">Day 1</button>
+                <button class="tab" onclick="selectStatsDay(2)">Day 2</button>
+                <button class="tab" onclick="selectStatsDay(3)">Day 3</button>
+                <button class="tab" onclick="selectStatsDay(4)">Day 4</button>
+                <button class="tab" onclick="selectStatsDay(5)">Day 5</button>
+                <button class="tab" onclick="selectStatsDay(6)">Day 6</button>
+            </div>
+            <div class="chart-card">
+                <div class="stats-grid">
+                    <div class="stat-field">
+                        <label class="stat-label">Total Workout Time</label>
+                        <div class="stat-input-row">
+                            <input type="number" id="stat-time" class="stat-input" placeholder="0" min="0">
+                            <span class="stat-unit">minutes</span>
+                        </div>
+                    </div>
+                    <div class="stat-field">
+                        <label class="stat-label">Total Calories</label>
+                        <div class="stat-input-row">
+                            <input type="number" id="stat-calories" class="stat-input" placeholder="0" min="0">
+                            <span class="stat-unit">kcal</span>
+                        </div>
+                    </div>
+                    <div class="stat-field">
+                        <label class="stat-label">Average Heart Rate</label>
+                        <div class="stat-input-row">
+                            <input type="number" id="stat-hr" class="stat-input" placeholder="0" min="40" max="220">
+                            <span class="stat-unit">bpm</span>
+                        </div>
+                    </div>
+                    <div class="stat-field">
+                        <label class="stat-label">Type of Workout</label>
+                        <select id="stat-type" class="stat-input full" onchange="toggleWorkoutOther(this)">
+                            <option value="">— Select —</option>
+                            <option value="Strength Training">Strength Training</option>
+                            <option value="Yoga">Yoga</option>
+                            <option value="Pilates">Pilates</option>
+                            <option value="Run">Run</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <input type="text" id="stat-type-other" class="stat-input full" placeholder="Describe your workout..." style="display:none; margin-top:8px;">
+                    </div>
+                    <div class="stat-field">
+                        <label class="stat-label">Sleep Last Night</label>
+                        <div class="stat-input-row">
+                            <input type="number" id="stat-sleep" class="stat-input" placeholder="0" min="0" max="24" step="0.5">
+                            <span class="stat-unit">hours</span>
+                        </div>
+                    </div>
+                    <div class="stat-field">
+                        <label class="stat-label">Music</label>
+                        <select id="stat-music" class="stat-input full" onchange="toggleMusicOther(this)">
+                            <option value="">— Select —</option>
+                            <option value="Hip Hop / Rap">Hip Hop / Rap</option>
+                            <option value="Rock / Metal">Rock / Metal</option>
+                            <option value="Electronic / EDM">Electronic / EDM</option>
+                            <option value="Pop">Pop</option>
+                            <option value="R&B / Soul">R&amp;B / Soul</option>
+                            <option value="Classical">Classical</option>
+                            <option value="Podcasts">Podcasts</option>
+                            <option value="SoundCloud">SoundCloud</option>
+                            <option value="Silence">Silence / No Music</option>
+                        </select>
+                        <input type="text" id="stat-music-note" class="stat-input full" placeholder="What were you listening to?" style="display:none; margin-top:8px;">
+                    </div>
+                    <div class="stat-field full-width">
+                        <label class="stat-label">Focus Level</label>
+                        <div class="focus-container">
+                            <input type="range" id="stat-focus" min="1" max="10" value="5" oninput="updateFocusDisplay(this.value)">
+                            <div class="focus-row">
+                                <span class="focus-end">Low</span>
+                                <span id="focus-display" class="focus-value">5 — Good</span>
+                                <span class="focus-end">Peak</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-field full-width">
+                        <label class="stat-label">Energy Level Before Workout</label>
+                        <div class="focus-container">
+                            <input type="range" id="stat-energy" min="1" max="10" value="5" oninput="updateEnergyDisplay(this.value)">
+                            <div class="focus-row">
+                                <span class="focus-end">Drained</span>
+                                <span id="energy-display" class="focus-value">5 — Okay</span>
+                                <span class="focus-end">Energized</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="save-btn" id="stats-save-btn" onclick="saveStats()">Save Stats</button>
+            </div>
+            <div class="table-card">
+                <h3>Stats History</h3>
+                <div class="table-scroll">
+                    <table id="stats-table">
+                        <thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Cal</th><th>HR</th><th>Sleep</th><th>Focus</th><th>Energy</th><th>Music</th><th>Type</th></tr></thead>
+                        <tbody><tr class="empty-row"><td colspan="10">No stats logged yet.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="table-card" id="music-correlation-card">
+                <h3>Music &amp; Performance Correlation</h3>
+                <p class="page-subtitle" style="margin-bottom:14px">How your music choice affects your workout</p>
+                <div class="table-scroll">
+                    <table id="music-table">
+                        <thead><tr><th>Genre</th><th>Sessions</th><th>Avg Focus</th><th>Avg Energy</th><th>Avg Volume (lbs)</th></tr></thead>
+                        <tbody><tr class="empty-row"><td colspan="5">Log a few sessions with music to see correlations.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── GOALS ── -->
+        <div id="page-goals" class="page">
+            <div class="page-header"><h1>Goals</h1><p class="page-subtitle">Set a target weight for any lift and track your progress</p></div>
+            <div class="chart-card">
+                <h3 style="margin-bottom:16px; color:#555; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px">Add New Goal</h3>
+                <div class="goals-form">
+                    <div class="stat-field">
+                        <label class="stat-label">Exercise</label>
+                        <select id="goal-exercise" class="stat-input full"></select>
+                    </div>
+                    <div class="stat-field">
+                        <label class="stat-label">Target Weight</label>
+                        <div class="stat-input-row">
+                            <input type="number" id="goal-weight" class="stat-input" placeholder="0" min="0" step="5">
+                            <span class="stat-unit">lbs</span>
+                        </div>
+                    </div>
+                    <div class="stat-field">
+                        <label class="stat-label">Target Date (optional)</label>
+                        <input type="date" id="goal-date" class="stat-input full">
+                    </div>
+                </div>
+                <button class="save-btn" onclick="addGoal()" style="margin-top:16px">Add Goal</button>
+            </div>
+            <div id="goals-list"></div>
+        </div>
+
+        <!-- ── RED LIGHT THERAPY ── -->
+        <div id="page-redlight" class="page">
+            <div class="page-header"><h1>Red Light Therapy</h1><p class="page-subtitle">Track your red light therapy sessions</p></div>
+
+            <div class="redlight-stats" id="redlight-summary"></div>
+
+            <div class="chart-card">
+                <h3 style="margin-bottom:16px; color:#555; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px">Log a Session</h3>
+                <div class="stats-grid">
+                    <div class="stat-field">
+                        <label class="stat-label">Date</label>
+                        <input type="date" id="rl-date" class="stat-input full">
+                    </div>
+                    <div class="stat-field">
+                        <label class="stat-label">Duration</label>
+                        <div class="stat-input-row">
+                            <input type="number" id="rl-duration" class="stat-input" placeholder="0" min="1" max="120">
+                            <span class="stat-unit">minutes</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="save-btn" onclick="logRedLight()">Log Session</button>
+            </div>
+
+            <div class="table-card">
+                <h3>Session History</h3>
+                <div class="table-scroll">
+                    <table id="redlight-table">
+                        <thead>
+                            <tr><th>#</th><th>Date</th><th>Duration</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="empty-row"><td colspan="3">No sessions logged yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div id="share-toast" class="share-toast">Link copied to clipboard!</div>
+
+<script src="app.js"></script>
+</body>
+</html>
