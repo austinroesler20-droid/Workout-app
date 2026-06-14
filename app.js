@@ -1,6 +1,6 @@
 const WORKOUT_DAYS = {
     1: { name: "Push + Glutes", exercises: ["Bench Press","Overhead Tricep Extension","Incline DB Press","Cable Fly","Hip Thrust","Overhead Press","Lateral Raise","Face Pulls"] },
-    2: { name: "Pull + Legs", exercises: ["Barbell Row","Lat Pulldown","Seated Cable Row","Walking Lunges","Single Arm DB Row","Face Pulls","Barbell Curl","Rear Delt Fly"] },
+    2: { name: "Pull + Legs", exercises: ["Barbell Row","Barbell Curl","Lat Pulldown","Walking Lunges","Hammer Curl","Seated Cable Row","Face Pulls","Rear Delt Fly"] },
     3: { name: "Legs + Arms", exercises: ["Back Squat","Leg Press","Bulgarian Split Squat","Hammer Curl","Leg Extension","Hip Abduction","Standing Calf Raise","Seated Calf Raise"] },
     4: { name: "Posterior Chain + Triceps", exercises: ["Deadlift","Romanian Deadlift","Tricep Pushdown","Good Mornings","Leg Curl","Cable Pull-Through","Back Extension","Reverse Hyperextension"] },
     5: { name: "Shoulders & Arms + Carries", exercises: ["Overhead Press","Arnold Press","Farmer's Carry","Rear Delt Fly","Barbell Curl","Hammer Curl","Skull Crushers","Tricep Dips"] },
