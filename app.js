@@ -1,11 +1,13 @@
 const WORKOUT_DAYS = {
-    1: { name: "Push + Glutes", exercises: ["Bench Press","Overhead Tricep Extension","Incline DB Press","Cable Fly","Hip Thrust","Overhead Press","Lateral Raise","Face Pulls"] },
-    2: { name: "Pull + Legs", exercises: ["Barbell Row","Barbell Curl","Lat Pulldown","Walking Lunges","Hammer Curl","Seated Cable Row","Face Pulls","Rear Delt Fly"] },
-    3: { name: "Legs + Arms", exercises: ["Back Squat","Leg Press","Bulgarian Split Squat","Hammer Curl","Leg Extension","Hip Abduction","Standing Calf Raise","Seated Calf Raise"] },
-    4: { name: "Posterior Chain + Triceps", exercises: ["Deadlift","Romanian Deadlift","Tricep Pushdown","Good Mornings","Leg Curl","Cable Pull-Through","Back Extension","Reverse Hyperextension"] },
-    5: { name: "Shoulders & Arms + Carries", exercises: ["Overhead Press","Arnold Press","Farmer's Carry","Rear Delt Fly","Barbell Curl","Hammer Curl","Skull Crushers","Tricep Dips"] },
-    6: { name: "Full Body + Shoulder Isolation", exercises: ["Pull-Ups","Front Squat","Push Press","Lateral Raise","Pendlay Row","Goblet Squat","Ab Wheel Rollout","Pallof Press"] }
+    1: { name: "Push + Glutes", exercises: ["Bench Press","Overhead Tricep Extension","Incline DB Press","Cable Fly","Hip Thrust","Overhead Press","Lateral Raise","Face Pulls","Assisted Pull-Up"] },
+    2: { name: "Pull + Legs", exercises: ["Barbell Row","Barbell Curl","Lat Pulldown","Walking Lunges","Hammer Curl","Seated Cable Row","Face Pulls","Rear Delt Fly","Assisted Pull-Up"] },
+    3: { name: "Legs + Arms", exercises: ["Back Squat","Leg Press","Bulgarian Split Squat","Hammer Curl","Leg Extension","Hip Abduction","Standing Calf Raise","Seated Calf Raise","Assisted Pull-Up"] },
+    4: { name: "Posterior Chain + Triceps", exercises: ["Deadlift","Romanian Deadlift","Tricep Pushdown","Good Mornings","Leg Curl","Cable Pull-Through","Back Extension","Reverse Hyperextension","Assisted Pull-Up"] },
+    5: { name: "Shoulders & Arms + Carries", exercises: ["Overhead Press","Arnold Press","Farmer's Carry","Rear Delt Fly","Barbell Curl","Hammer Curl","Skull Crushers","Tricep Dips","Assisted Pull-Up"] },
+    6: { name: "Full Body + Shoulder Isolation", exercises: ["Pull-Ups","Front Squat","Push Press","Lateral Raise","Pendlay Row","Goblet Squat","Ab Wheel Rollout","Pallof Press","Assisted Pull-Up"] }
 };
+
+const EXERCISE_SETS = { 'Assisted Pull-Up': 3 };
 
 const FOCUS_LABELS  = { 1:"1 — Very Low",2:"2 — Low",3:"3 — Low",4:"4 — Moderate",5:"5 — Good",6:"6 — Good",7:"7 — High",8:"8 — High",9:"9 — Peak",10:"10 — Peak" };
 const ENERGY_LABELS = { 1:"1 — Drained",2:"2 — Tired",3:"3 — Low",4:"4 — Okay",5:"5 — Okay",6:"6 — Good",7:"7 — Good",8:"8 — Energized",9:"9 — Energized",10:"10 — Peak" };
@@ -158,6 +160,12 @@ function bootApp() {
 function show(id) { const el = document.getElementById(id); if (el) el.style.display = ''; }
 function hide(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
 
+// ── Warmup Checkboxes ─────────────────────────────────
+
+function toggleWarmupCheck(checkbox) {
+    checkbox.closest('.warmup-item').classList.toggle('done', checkbox.checked);
+}
+
 // ── Warmup ────────────────────────────────────────────
 
 function loadWarmupValues() {
@@ -241,7 +249,8 @@ function renderWorkout(day) {
         const dis          = isViewOnly ? 'disabled' : '';
 
         let setsHTML = '';
-        for (let s = 0; s < 4; s++) {
+        const numSets = EXERCISE_SETS[exercise] || 4;
+        for (let s = 0; s < numSets; s++) {
             setsHTML += `<div class="set-row">
                 <span class="set-label">Set ${s + 1}</span>
                 <div class="set-inputs">
