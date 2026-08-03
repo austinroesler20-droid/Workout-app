@@ -84,10 +84,6 @@
             <span class="nav-icon">&#127919;</span>
             <span class="nav-label">Goals</span>
         </button>
-        <button class="nav-item" data-page="redlight" onclick="showPage('redlight')">
-            <span class="nav-icon">&#128308;</span>
-            <span class="nav-label">Red Light</span>
-        </button>
         <div class="sidebar-footer">
             <button class="summary-btn" id="summary-btn" onclick="showWeeklySummary()" style="display:none">
                 &#128197; Weekly Summary
@@ -249,22 +245,6 @@
                             <span class="stat-unit">hours</span>
                         </div>
                     </div>
-                    <div class="stat-field">
-                        <label class="stat-label">Music</label>
-                        <select id="stat-music" class="stat-input full" onchange="toggleMusicOther(this)">
-                            <option value="">— Select —</option>
-                            <option value="Hip Hop / Rap">Hip Hop / Rap</option>
-                            <option value="Rock / Metal">Rock / Metal</option>
-                            <option value="Electronic / EDM">Electronic / EDM</option>
-                            <option value="Pop">Pop</option>
-                            <option value="R&B / Soul">R&amp;B / Soul</option>
-                            <option value="Classical">Classical</option>
-                            <option value="Podcasts">Podcasts</option>
-                            <option value="SoundCloud">SoundCloud</option>
-                            <option value="Silence">Silence / No Music</option>
-                        </select>
-                        <input type="text" id="stat-music-note" class="stat-input full" placeholder="What were you listening to?" style="display:none; margin-top:8px;">
-                    </div>
                     <div class="stat-field full-width">
                         <label class="stat-label">Focus Level</label>
                         <div class="focus-container">
@@ -294,18 +274,8 @@
                 <h3>Stats History</h3>
                 <div class="table-scroll">
                     <table id="stats-table">
-                        <thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Cal</th><th>HR</th><th>Sleep</th><th>Focus</th><th>Energy</th><th>Music</th><th>Type</th></tr></thead>
-                        <tbody><tr class="empty-row"><td colspan="10">No stats logged yet.</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="table-card" id="music-correlation-card">
-                <h3>Music &amp; Performance Correlation</h3>
-                <p class="page-subtitle" style="margin-bottom:14px">How your music choice affects your workout</p>
-                <div class="table-scroll">
-                    <table id="music-table">
-                        <thead><tr><th>Genre</th><th>Sessions</th><th>Avg Focus</th><th>Avg Energy</th><th>Avg Volume (lbs)</th></tr></thead>
-                        <tbody><tr class="empty-row"><td colspan="5">Log a few sessions with music to see correlations.</td></tr></tbody>
+                        <thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Cal</th><th>HR</th><th>Sleep</th><th>Focus</th><th>Energy</th><th>Type</th></tr></thead>
+                        <tbody><tr class="empty-row"><td colspan="9">No stats logged yet.</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -336,45 +306,6 @@
                 <button class="save-btn" onclick="addGoal()" style="margin-top:16px">Add Goal</button>
             </div>
             <div id="goals-list"></div>
-        </div>
-
-        <!-- ── RED LIGHT THERAPY ── -->
-        <div id="page-redlight" class="page">
-            <div class="page-header"><h1>Red Light Therapy</h1><p class="page-subtitle">Track your red light therapy sessions</p></div>
-
-            <div class="redlight-stats" id="redlight-summary"></div>
-
-            <div class="chart-card">
-                <h3 style="margin-bottom:16px; color:#555; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px">Log a Session</h3>
-                <div class="stats-grid">
-                    <div class="stat-field">
-                        <label class="stat-label">Date</label>
-                        <input type="date" id="rl-date" class="stat-input full">
-                    </div>
-                    <div class="stat-field">
-                        <label class="stat-label">Duration</label>
-                        <div class="stat-input-row">
-                            <input type="number" id="rl-duration" class="stat-input" placeholder="0" min="1" max="120">
-                            <span class="stat-unit">minutes</span>
-                        </div>
-                    </div>
-                </div>
-                <button class="save-btn" onclick="logRedLight()">Log Session</button>
-            </div>
-
-            <div class="table-card">
-                <h3>Session History</h3>
-                <div class="table-scroll">
-                    <table id="redlight-table">
-                        <thead>
-                            <tr><th>#</th><th>Date</th><th>Duration</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr class="empty-row"><td colspan="3">No sessions logged yet.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
 
     </main>

@@ -34,7 +34,6 @@ async function loadFromCloud() {
         if (cloud.warmupValues)        localStorage.setItem('warmupValues',         JSON.stringify(cloud.warmupValues));
         if (cloud.workoutStats)        localStorage.setItem('workoutStats',         JSON.stringify(cloud.workoutStats));
         if (cloud.goalsData)           localStorage.setItem('goalsData',            JSON.stringify(cloud.goalsData));
-        if (cloud.redLightData)        localStorage.setItem('redLightData',         JSON.stringify(cloud.redLightData));
         if (cloud.prLog)               localStorage.setItem('prLog',                JSON.stringify(cloud.prLog));
     } catch (e) {
         console.warn('Cloud load failed, using local data', e);
@@ -51,7 +50,6 @@ async function saveToCloud() {
                 warmupValues:        JSON.parse(localStorage.getItem('warmupValues')         || '{}'),
                 workoutStats:        JSON.parse(localStorage.getItem('workoutStats')         || '{"sessions":[]}'),
                 goalsData:           JSON.parse(localStorage.getItem('goalsData')            || '[]'),
-                redLightData:        JSON.parse(localStorage.getItem('redLightData')         || '[]'),
                 prLog:               JSON.parse(localStorage.getItem('prLog')                || '[]')
             })
         });
@@ -192,7 +190,6 @@ function showPage(name) {
     if (name === 'bylift')  updateLiftPage();
     if (name === 'stats')   renderStatsPage();
     if (name === 'goals')   renderGoalsPage();
-    if (name === 'redlight') renderRedLightPage();
 }
 
 // ── Streak ────────────────────────────────────────────
@@ -512,12 +509,6 @@ function toggleWorkoutOther(sel) {
     if (sel.value !== 'Other') o.value = '';
 }
 
-function toggleMusicOther(sel) {
-    const o = document.getElementById('stat-music-note');
-    o.style.display = sel.value === 'SoundCloud' ? 'block' : 'none';
-    if (sel.value !== 'SoundCloud') o.value = '';
-}
-
 function updateFocusDisplay(v)  { document.getElementById('focus-display').textContent  = FOCUS_LABELS[v]  || v; }
 function updateEnergyDisplay(v) { document.getElementById('energy-display').textContent = ENERGY_LABELS[v] || v; }
 
@@ -537,13 +528,6 @@ function loadStatsIntoForm() {
     const tOther = document.getElementById('stat-type-other');
     tOther.style.display = !presets.includes(t) && t ? 'block' : 'none';
     tOther.value = !presets.includes(t) ? t : '';
-
-    const musicPresets = ['Hip Hop / Rap','Rock / Metal','Electronic / EDM','Pop','R&B / Soul','Classical','Podcasts','SoundCloud','Silence',''];
-    const m = ex.music || '';
-    document.getElementById('stat-music').value = musicPresets.includes(m) ? m : '';
-    const mNote = document.getElementById('stat-music-note');
-    mNote.style.display = m === 'SoundCloud' ? 'block' : 'none';
-    mNote.value = ex.musicNote || '';
 
     const focus  = ex.focusLevel  || 5;
     const energy = ex.energyLevel || 5;
@@ -565,9 +549,7 @@ function saveStats() {
         sleep:       document.getElementById('stat-sleep').value || '0',
         focusLevel:  document.getElementById('stat-focus').value,
         energyLevel: document.getElementById('stat-energy').value,
-        workoutType: typeVal === 'Other' ? (document.getElementById('stat-type-other').value.trim() || 'Other') : (typeVal || '—'),
-        music:       document.getElementById('stat-music').value,
-        musicNote:   document.getElementById('stat-music-note').value.trim()
+        workoutType: typeVal === 'Other' ? (document.getElementById('stat-type-other').value.trim() || 'Other') : (typeVal || '—')
     };
     const all = loadStatsData();
     const idx = all.sessions.findIndex(s => s.date === today && s.day === statsDay);
@@ -579,43 +561,17 @@ function saveStats() {
     setTimeout(() => { btn.textContent = 'Save Stats'; btn.classList.remove('saved'); }, 2000);
 
     renderStatsTable();
-    renderMusicCorrelation();
 }
 
-function renderStatsPage() { loadStatsIntoForm(); renderStatsTable(); renderMusicCorrelation(); }
+function renderStatsPage() { loadStatsIntoForm(); renderStatsTable(); }
 
 function renderStatsTable() {
     const all   = loadStatsData();
     const tbody = document.querySelector('#stats-table tbody');
-    if (!all.sessions.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="10">No stats logged yet.</td></tr>'; return; }
+    if (!all.sessions.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="9">No stats logged yet.</td></tr>'; return; }
     tbody.innerHTML = all.sessions.slice().sort((a,b) => new Date(b.date)-new Date(a.date)).map(s =>
-        `<tr><td>${s.date}</td><td>Day ${s.day}</td><td>${s.time}m</td><td>${s.calories}</td><td>${s.heartRate}</td><td>${s.sleep}h</td><td>${FOCUS_LABELS[s.focusLevel]||s.focusLevel}</td><td>${ENERGY_LABELS[s.energyLevel]||s.energyLevel}</td><td>${s.music||'—'}${s.musicNote ? ' ('+s.musicNote+')' : ''}</td><td>${s.workoutType}</td></tr>`
+        `<tr><td>${s.date}</td><td>Day ${s.day}</td><td>${s.time}m</td><td>${s.calories}</td><td>${s.heartRate}</td><td>${s.sleep}h</td><td>${FOCUS_LABELS[s.focusLevel]||s.focusLevel}</td><td>${ENERGY_LABELS[s.energyLevel]||s.energyLevel}</td><td>${s.workoutType}</td></tr>`
     ).join('');
-}
-
-function renderMusicCorrelation() {
-    const all     = loadStatsData();
-    const workout = loadData();
-    const byGenre = {};
-
-    all.sessions.forEach(s => {
-        const genre = s.music || 'None';
-        if (!byGenre[genre]) byGenre[genre] = { count: 0, focus: 0, energy: 0, volume: 0 };
-        const g = byGenre[genre];
-        g.count++;
-        g.focus  += parseInt(s.focusLevel)  || 0;
-        g.energy += parseInt(s.energyLevel) || 0;
-        const w = workout.workouts.find(w => w.date === s.date && w.day === s.day);
-        if (w) g.volume += w.exercises.reduce((t, ex) => t + ex.sets.reduce((sv, set) => sv + set.weight * set.reps, 0), 0);
-    });
-
-    const tbody = document.querySelector('#music-table tbody');
-    const genres = Object.keys(byGenre);
-    if (!genres.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Log a few sessions with music to see correlations.</td></tr>'; return; }
-    tbody.innerHTML = genres.sort((a,b) => byGenre[b].count - byGenre[a].count).map(g => {
-        const d = byGenre[g];
-        return `<tr><td>${g}</td><td>${d.count}</td><td>${(d.focus/d.count).toFixed(1)}</td><td>${(d.energy/d.count).toFixed(1)}</td><td>${Math.round(d.volume/d.count).toLocaleString()}</td></tr>`;
-    }).join('');
 }
 
 function loadStatsData()    { return JSON.parse(localStorage.getItem('workoutStats') || '{"sessions":[]}'); }
@@ -721,64 +677,6 @@ function renderGoalsList() {
 
 function loadGoalsData()   { return JSON.parse(localStorage.getItem('goalsData') || '[]'); }
 function saveGoalsData(d)  { localStorage.setItem('goalsData', JSON.stringify(d)); saveToCloud(); }
-
-// ── Red Light Therapy ─────────────────────────────────
-
-function renderRedLightPage() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('rl-date').value = today;
-    renderRedLightSummary();
-    renderRedLightTable();
-}
-
-function logRedLight() {
-    const date     = document.getElementById('rl-date').value;
-    const duration = parseInt(document.getElementById('rl-duration').value) || 0;
-    if (!date) { alert('Please select a date.'); return; }
-
-    const sessions = loadRedLightData();
-    sessions.unshift({ id: Date.now(), date, duration });
-    saveRedLightData(sessions);
-
-    document.getElementById('rl-duration').value = '';
-    renderRedLightSummary();
-    renderRedLightTable();
-
-    const btn = document.querySelector('#page-redlight .save-btn');
-    btn.textContent = 'Logged!'; btn.classList.add('saved');
-    setTimeout(() => { btn.textContent = 'Log Session'; btn.classList.remove('saved'); }, 2000);
-}
-
-function renderRedLightSummary() {
-    const sessions   = loadRedLightData();
-    const total      = sessions.length;
-    const totalMins  = sessions.reduce((t, s) => t + (s.duration || 0), 0);
-    const totalHours = (totalMins / 60).toFixed(1);
-
-    const thisWeek = sessions.filter(s => {
-        const d = new Date(s.date);
-        const now = new Date();
-        const weekAgo = new Date(now.getTime() - 7 * 86400000);
-        return d >= weekAgo;
-    }).length;
-
-    document.getElementById('redlight-summary').innerHTML = `
-        <div class="rl-stat"><div class="rl-value">${total}</div><div class="rl-label">Total Sessions</div></div>
-        <div class="rl-stat"><div class="rl-value">${totalHours}h</div><div class="rl-label">Total Time</div></div>
-        <div class="rl-stat"><div class="rl-value">${thisWeek}</div><div class="rl-label">This Week</div></div>`;
-}
-
-function renderRedLightTable() {
-    const sessions = loadRedLightData();
-    const tbody    = document.querySelector('#redlight-table tbody');
-    if (!sessions.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="3">No sessions logged yet.</td></tr>'; return; }
-    tbody.innerHTML = sessions.map((s, i) =>
-        `<tr><td>${sessions.length - i}</td><td>${s.date}</td><td>${s.duration ? s.duration + ' min' : '—'}</td></tr>`
-    ).join('');
-}
-
-function loadRedLightData()   { return JSON.parse(localStorage.getItem('redLightData') || '[]'); }
-function saveRedLightData(d)  { localStorage.setItem('redLightData', JSON.stringify(d)); saveToCloud(); }
 
 // ── Storage ───────────────────────────────────────────
 

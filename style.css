@@ -351,17 +351,6 @@ tbody td:first-child { color: #888; font-size: 0.82rem; }
 .goal-stats .target { color: #888; }
 .goals-empty { text-align: center; color: #333; padding: 40px; font-style: italic; }
 
-/* ── Red Light Therapy ── */
-.redlight-stats {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px;
-}
-.rl-stat {
-    background: #161616; border: 1px solid #222; border-radius: 12px;
-    padding: 20px; text-align: center;
-}
-.rl-stat .rl-value { font-size: 2rem; font-weight: 800; color: #ff4444; }
-.rl-stat .rl-label { font-size: 0.78rem; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
-
 /* ── Mobile ── */
 @media (max-width: 700px) {
     .sidebar {
