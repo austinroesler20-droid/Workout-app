@@ -9,11 +9,7 @@ const WORKOUT_DAYS = {
 
 const EXERCISE_SETS = { 'Assisted Pull-Up': 3 };
 
-const FOCUS_LABELS  = { 1:"1 — Very Low",2:"2 — Low",3:"3 — Low",4:"4 — Moderate",5:"5 — Good",6:"6 — Good",7:"7 — High",8:"8 — High",9:"9 — Peak",10:"10 — Peak" };
-const ENERGY_LABELS = { 1:"1 — Drained",2:"2 — Tired",3:"3 — Low",4:"4 — Okay",5:"5 — Okay",6:"6 — Good",7:"7 — Good",8:"8 — Energized",9:"9 — Energized",10:"10 — Peak" };
-
 let currentDay = 1;
-let statsDay   = 1;
 let volumeChart = null;
 let liftChart   = null;
 let isViewOnly  = false;
@@ -238,7 +234,6 @@ function showPage(name) {
     document.querySelector('[data-page="' + name + '"]').classList.add('active');
     if (name === 'volume')  renderVolumePage();
     if (name === 'bylift')  updateLiftPage();
-    if (name === 'stats')   renderStatsPage();
     if (name === 'goals')   renderGoalsPage();
 }
 
@@ -545,87 +540,9 @@ function updateLiftPage() {
     }).join('');
 }
 
-// ── Session Stats Page ────────────────────────────────
+// ── Session Stats (legacy data, still read by Weekly Summary) ──
 
-function selectStatsDay(day) {
-    statsDay = day;
-    document.querySelectorAll('.stats-day-tabs .tab').forEach((t, i) => t.classList.toggle('active', i + 1 === day));
-    loadStatsIntoForm();
-}
-
-function toggleWorkoutOther(sel) {
-    const o = document.getElementById('stat-type-other');
-    o.style.display = sel.value === 'Other' ? 'block' : 'none';
-    if (sel.value !== 'Other') o.value = '';
-}
-
-function updateFocusDisplay(v)  { document.getElementById('focus-display').textContent  = FOCUS_LABELS[v]  || v; }
-function updateEnergyDisplay(v) { document.getElementById('energy-display').textContent = ENERGY_LABELS[v] || v; }
-
-function loadStatsIntoForm() {
-    const today = new Date().toISOString().split('T')[0];
-    const all   = loadStatsData();
-    const ex    = all.sessions.find(s => s.date === today && s.day === statsDay) || {};
-
-    document.getElementById('stat-time').value     = ex.time     || '';
-    document.getElementById('stat-calories').value = ex.calories || '';
-    document.getElementById('stat-hr').value       = ex.heartRate || '';
-    document.getElementById('stat-sleep').value    = ex.sleep    || '';
-
-    const presets = ['Strength Training','Yoga','Pilates','Run','Other',''];
-    const t = ex.workoutType || '';
-    document.getElementById('stat-type').value = presets.includes(t) ? t : 'Other';
-    const tOther = document.getElementById('stat-type-other');
-    tOther.style.display = !presets.includes(t) && t ? 'block' : 'none';
-    tOther.value = !presets.includes(t) ? t : '';
-
-    const focus  = ex.focusLevel  || 5;
-    const energy = ex.energyLevel || 5;
-    document.getElementById('stat-focus').value  = focus;
-    document.getElementById('stat-energy').value = energy;
-    updateFocusDisplay(focus);
-    updateEnergyDisplay(energy);
-}
-
-function saveStats() {
-    const today   = new Date().toISOString().split('T')[0];
-    const typeVal = document.getElementById('stat-type').value;
-    const entry   = {
-        date:        today,
-        day:         statsDay,
-        time:        document.getElementById('stat-time').value || '0',
-        calories:    document.getElementById('stat-calories').value || '0',
-        heartRate:   document.getElementById('stat-hr').value || '0',
-        sleep:       document.getElementById('stat-sleep').value || '0',
-        focusLevel:  document.getElementById('stat-focus').value,
-        energyLevel: document.getElementById('stat-energy').value,
-        workoutType: typeVal === 'Other' ? (document.getElementById('stat-type-other').value.trim() || 'Other') : (typeVal || '—')
-    };
-    const all = loadStatsData();
-    const idx = all.sessions.findIndex(s => s.date === today && s.day === statsDay);
-    if (idx >= 0) all.sessions[idx] = entry; else all.sessions.push(entry);
-    saveStatsData(all);
-
-    const btn = document.getElementById('stats-save-btn');
-    btn.textContent = 'Saved!'; btn.classList.add('saved');
-    setTimeout(() => { btn.textContent = 'Save Stats'; btn.classList.remove('saved'); }, 2000);
-
-    renderStatsTable();
-}
-
-function renderStatsPage() { loadStatsIntoForm(); renderStatsTable(); }
-
-function renderStatsTable() {
-    const all   = loadStatsData();
-    const tbody = document.querySelector('#stats-table tbody');
-    if (!all.sessions.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="9">No stats logged yet.</td></tr>'; return; }
-    tbody.innerHTML = all.sessions.slice().sort((a,b) => new Date(b.date)-new Date(a.date)).map(s =>
-        `<tr><td>${s.date}</td><td>Day ${s.day}</td><td>${s.time}m</td><td>${s.calories}</td><td>${s.heartRate}</td><td>${s.sleep}h</td><td>${FOCUS_LABELS[s.focusLevel]||s.focusLevel}</td><td>${ENERGY_LABELS[s.energyLevel]||s.energyLevel}</td><td>${s.workoutType}</td></tr>`
-    ).join('');
-}
-
-function loadStatsData()    { return JSON.parse(localStorage.getItem('workoutStats') || '{"sessions":[]}'); }
-function saveStatsData(d)   { localStorage.setItem('workoutStats', JSON.stringify(d)); saveToCloud(); }
+function loadStatsData() { return JSON.parse(localStorage.getItem('workoutStats') || '{"sessions":[]}'); }
 
 // ── Weekly Summary ────────────────────────────────────
 

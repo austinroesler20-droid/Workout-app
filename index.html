@@ -76,10 +76,6 @@
             <span class="nav-icon">&#128200;</span>
             <span class="nav-label">By Lift</span>
         </button>
-        <button class="nav-item" data-page="stats" onclick="showPage('stats')">
-            <span class="nav-icon">&#128203;</span>
-            <span class="nav-label">Session Stats</span>
-        </button>
         <button class="nav-item" data-page="goals" onclick="showPage('goals')">
             <span class="nav-icon">&#127919;</span>
             <span class="nav-label">Goals</span>
@@ -195,95 +191,6 @@
                     <table id="lift-table">
                         <thead><tr><th>Date</th><th>Set 1 (lbs)</th><th>Set 2 (lbs)</th><th>Set 3 (lbs)</th><th>Set 4 (lbs)</th><th>Max (lbs)</th><th>PR</th></tr></thead>
                         <tbody><tr class="empty-row"><td colspan="7">No data yet.</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ── SESSION STATS ── -->
-        <div id="page-stats" class="page">
-            <div class="page-header"><h1>Session Stats</h1><p class="page-subtitle">Log your workout metrics for each session</p></div>
-            <div class="stats-day-tabs">
-                <button class="tab active" onclick="selectStatsDay(1)">Day 1</button>
-                <button class="tab" onclick="selectStatsDay(2)">Day 2</button>
-                <button class="tab" onclick="selectStatsDay(3)">Day 3</button>
-                <button class="tab" onclick="selectStatsDay(4)">Day 4</button>
-                <button class="tab" onclick="selectStatsDay(5)">Day 5</button>
-                <button class="tab" onclick="selectStatsDay(6)">Day 6</button>
-            </div>
-            <div class="chart-card">
-                <div class="stats-grid">
-                    <div class="stat-field">
-                        <label class="stat-label">Total Workout Time</label>
-                        <div class="stat-input-row">
-                            <input type="number" id="stat-time" class="stat-input" placeholder="0" min="0">
-                            <span class="stat-unit">minutes</span>
-                        </div>
-                    </div>
-                    <div class="stat-field">
-                        <label class="stat-label">Total Calories</label>
-                        <div class="stat-input-row">
-                            <input type="number" id="stat-calories" class="stat-input" placeholder="0" min="0">
-                            <span class="stat-unit">kcal</span>
-                        </div>
-                    </div>
-                    <div class="stat-field">
-                        <label class="stat-label">Average Heart Rate</label>
-                        <div class="stat-input-row">
-                            <input type="number" id="stat-hr" class="stat-input" placeholder="0" min="40" max="220">
-                            <span class="stat-unit">bpm</span>
-                        </div>
-                    </div>
-                    <div class="stat-field">
-                        <label class="stat-label">Type of Workout</label>
-                        <select id="stat-type" class="stat-input full" onchange="toggleWorkoutOther(this)">
-                            <option value="">— Select —</option>
-                            <option value="Strength Training">Strength Training</option>
-                            <option value="Yoga">Yoga</option>
-                            <option value="Pilates">Pilates</option>
-                            <option value="Run">Run</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        <input type="text" id="stat-type-other" class="stat-input full" placeholder="Describe your workout..." style="display:none; margin-top:8px;">
-                    </div>
-                    <div class="stat-field">
-                        <label class="stat-label">Sleep Last Night</label>
-                        <div class="stat-input-row">
-                            <input type="number" id="stat-sleep" class="stat-input" placeholder="0" min="0" max="24" step="0.5">
-                            <span class="stat-unit">hours</span>
-                        </div>
-                    </div>
-                    <div class="stat-field full-width">
-                        <label class="stat-label">Focus Level</label>
-                        <div class="focus-container">
-                            <input type="range" id="stat-focus" min="1" max="10" value="5" oninput="updateFocusDisplay(this.value)">
-                            <div class="focus-row">
-                                <span class="focus-end">Low</span>
-                                <span id="focus-display" class="focus-value">5 — Good</span>
-                                <span class="focus-end">Peak</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="stat-field full-width">
-                        <label class="stat-label">Energy Level Before Workout</label>
-                        <div class="focus-container">
-                            <input type="range" id="stat-energy" min="1" max="10" value="5" oninput="updateEnergyDisplay(this.value)">
-                            <div class="focus-row">
-                                <span class="focus-end">Drained</span>
-                                <span id="energy-display" class="focus-value">5 — Okay</span>
-                                <span class="focus-end">Energized</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button class="save-btn" id="stats-save-btn" onclick="saveStats()">Save Stats</button>
-            </div>
-            <div class="table-card">
-                <h3>Stats History</h3>
-                <div class="table-scroll">
-                    <table id="stats-table">
-                        <thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Cal</th><th>HR</th><th>Sleep</th><th>Focus</th><th>Energy</th><th>Type</th></tr></thead>
-                        <tbody><tr class="empty-row"><td colspan="9">No stats logged yet.</td></tr></tbody>
                     </table>
                 </div>
             </div>
