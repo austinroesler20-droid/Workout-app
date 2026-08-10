@@ -32,6 +32,7 @@ async function loadFromCloud() {
         const cloud = json.record;
         if (cloud.strengthTrackerData) localStorage.setItem('strengthTrackerData', JSON.stringify(cloud.strengthTrackerData));
         if (cloud.warmupValues)        localStorage.setItem('warmupValues',         JSON.stringify(cloud.warmupValues));
+        if (cloud.warmupChecks)        localStorage.setItem('warmupChecks',         JSON.stringify(cloud.warmupChecks));
         if (cloud.workoutStats)        localStorage.setItem('workoutStats',         JSON.stringify(cloud.workoutStats));
         if (cloud.goalsData)           localStorage.setItem('goalsData',            JSON.stringify(cloud.goalsData));
         if (cloud.prLog)               localStorage.setItem('prLog',                JSON.stringify(cloud.prLog));
@@ -48,6 +49,7 @@ async function saveToCloud() {
             body:    JSON.stringify({
                 strengthTrackerData: JSON.parse(localStorage.getItem('strengthTrackerData') || '{"workouts":[]}'),
                 warmupValues:        JSON.parse(localStorage.getItem('warmupValues')         || '{}'),
+                warmupChecks:        JSON.parse(localStorage.getItem('warmupChecks')         || '{}'),
                 workoutStats:        JSON.parse(localStorage.getItem('workoutStats')         || '{"sessions":[]}'),
                 goalsData:           JSON.parse(localStorage.getItem('goalsData')            || '[]'),
                 prLog:               JSON.parse(localStorage.getItem('prLog')                || '[]')
@@ -144,6 +146,7 @@ function bootApp() {
     });
     if (!isViewOnly) {
         loadWarmupValues();
+        loadWarmupChecks();
         document.getElementById('warmup-row').addEventListener('change', saveWarmupValues);
         document.getElementById('warmup-sled').addEventListener('change', saveWarmupValues);
         show('share-btn'); show('logout-btn'); show('summary-btn');
@@ -160,8 +163,55 @@ function hide(id) { const el = document.getElementById(id); if (el) el.style.dis
 
 // ── Warmup Checkboxes ─────────────────────────────────
 
+const WARMUP_ITEMS = ['row', 'stretch', 'pullups', 'sled', 'handwalk', 'abroller', 'stepups', 'rings', 'boxjumps'];
+
 function toggleWarmupCheck(checkbox) {
     checkbox.closest('.warmup-item').classList.toggle('done', checkbox.checked);
+    saveWarmupChecks();
+}
+
+function saveWarmupChecks() {
+    const today   = new Date().toISOString().split('T')[0];
+    const checked = WARMUP_ITEMS.filter(id => {
+        const li = document.querySelector(`[data-warmup-id="${id}"]`);
+        return li && li.querySelector('.warmup-check').checked;
+    });
+
+    const log = JSON.parse(localStorage.getItem('warmupChecks') || '{}');
+    if (checked.length > 0) log[today] = checked; else delete log[today];
+    localStorage.setItem('warmupChecks', JSON.stringify(log));
+    saveToCloud();
+
+    updateWarmupCountDisplay(log);
+}
+
+function loadWarmupChecks() {
+    const today = new Date().toISOString().split('T')[0];
+    const log   = JSON.parse(localStorage.getItem('warmupChecks') || '{}');
+    const todayChecked = log[today] || [];
+
+    WARMUP_ITEMS.forEach(id => {
+        const li = document.querySelector(`[data-warmup-id="${id}"]`);
+        if (!li) return;
+        const box = li.querySelector('.warmup-check');
+        const done = todayChecked.includes(id);
+        box.checked = done;
+        li.querySelector('.warmup-item').classList.toggle('done', done);
+    });
+
+    updateWarmupCountDisplay(log);
+}
+
+function updateWarmupCountDisplay(log) {
+    const today      = new Date().toISOString().split('T')[0];
+    const sessions   = Object.keys(log).length;
+    const todayCount = (log[today] || []).length;
+
+    const sessionsBadge = document.getElementById('warmup-count-badge');
+    if (sessionsBadge) sessionsBadge.textContent = `${sessions} session${sessions === 1 ? '' : 's'}`;
+
+    const todayBadge = document.getElementById('warmup-today-badge');
+    if (todayBadge) todayBadge.textContent = `${todayCount}/${WARMUP_ITEMS.length} today`;
 }
 
 // ── Warmup ────────────────────────────────────────────

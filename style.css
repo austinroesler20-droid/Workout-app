@@ -168,7 +168,14 @@ body {
     background: #161616; border: 1px solid #222; border-radius: 12px;
     padding: 20px 24px; margin-bottom: 28px;
 }
-.warmup h2 { color: #e84393; margin-bottom: 14px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; }
+.warmup-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.warmup h2 { color: #e84393; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; }
+.warmup-badges { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.warmup-count-badge {
+    font-size: 0.72rem; color: #e84393; background: rgba(232,67,147,0.1);
+    border: 1px solid rgba(232,67,147,0.25); border-radius: 20px; padding: 3px 10px; flex-shrink: 0;
+}
+.warmup-today-badge { color: #999; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); }
 .warmup ol { padding-left: 20px; }
 .warmup li {
     padding: 9px 0; color: #bbb; font-size: 0.92rem; border-bottom: 1px solid #1e1e1e;
