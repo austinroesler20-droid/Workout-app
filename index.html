@@ -107,7 +107,19 @@
                 </div>
             </div>
 
-            <section class="warmup">
+            <div class="day-tabs">
+                <button class="tab" onclick="selectDay('warmup')">Warmup</button>
+                <button class="tab active" onclick="selectDay(1)">Day 1</button>
+                <button class="tab" onclick="selectDay(2)">Day 2</button>
+                <button class="tab" onclick="selectDay(3)">Day 3</button>
+                <button class="tab" onclick="selectDay(4)">Day 4</button>
+                <button class="tab" onclick="selectDay(5)">Day 5</button>
+                <button class="tab" onclick="selectDay(6)">Day 6</button>
+                <button class="tab" onclick="selectDay(7)">Abs</button>
+            </div>
+            <div id="day-label" class="day-label"></div>
+
+            <section class="warmup" id="warmup-section" style="display:none">
                 <div class="warmup-header">
                     <h2>Warmup</h2>
                     <div class="warmup-badges">
@@ -117,7 +129,7 @@
                 </div>
                 <ol>
                     <li data-warmup-id="row">
-                        <label class="warmup-item"><input type="checkbox" class="warmup-check" onchange="toggleWarmupCheck(this)"><span class="warmup-name">Row — 5 minutes</span></label>
+                        <label class="warmup-item"><input type="checkbox" class="warmup-check" onchange="toggleWarmupCheck(this)"><span class="warmup-name">Row — 3 minutes</span></label>
                         <div class="warmup-weight">
                             <input type="number" id="warmup-row" class="warmup-input" min="1" max="20" step="1" placeholder="10">
                             <span class="warmup-unit">resistance</span>
@@ -131,8 +143,8 @@
                     <li data-warmup-id="sled">
                         <label class="warmup-item"><input type="checkbox" class="warmup-check" onchange="toggleWarmupCheck(this)"><span class="warmup-name">Sled Pull &amp; Push — 3 times each</span></label>
                         <div class="warmup-weight">
-                            <input type="number" id="warmup-sled" class="warmup-input" min="0" step="5" placeholder="90">
-                            <span class="warmup-unit">lbs</span>
+                            <input type="number" id="warmup-sled" class="warmup-input" min="0" step="2.5" placeholder="40">
+                            <span class="warmup-unit">kg</span>
                         </div>
                     </li>
                     <li data-warmup-id="handwalk"><label class="warmup-item"><input type="checkbox" class="warmup-check" onchange="toggleWarmupCheck(this)"><span>Walk on Hands — 3 minutes</span></label></li>
@@ -143,15 +155,6 @@
                 </ol>
             </section>
 
-            <div class="day-tabs">
-                <button class="tab active" onclick="selectDay(1)">Day 1</button>
-                <button class="tab" onclick="selectDay(2)">Day 2</button>
-                <button class="tab" onclick="selectDay(3)">Day 3</button>
-                <button class="tab" onclick="selectDay(4)">Day 4</button>
-                <button class="tab" onclick="selectDay(5)">Day 5</button>
-                <button class="tab" onclick="selectDay(6)">Day 6</button>
-            </div>
-            <div id="day-label" class="day-label"></div>
             <section id="workout-section"></section>
             <button class="save-btn" id="save-btn" onclick="saveWorkout()">Save Workout</button>
         </div>

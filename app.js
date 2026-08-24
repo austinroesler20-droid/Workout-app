@@ -1,13 +1,17 @@
 const WORKOUT_DAYS = {
     1: { name: "Push + Glutes", exercises: ["Bench Press","Overhead Tricep Extension","Incline DB Press","Cable Fly","Hip Thrust","Overhead Press","Lateral Raise","Face Pulls","Assisted Pull-Up"] },
     2: { name: "Pull + Legs", exercises: ["Barbell Row","Barbell Curl","Lat Pulldown","Walking Lunges","Hammer Curl","Seated Cable Row","Face Pulls","Rear Delt Fly","Assisted Pull-Up"] },
-    3: { name: "Legs + Arms", exercises: ["Back Squat","Leg Press","Bulgarian Split Squat","Hammer Curl","Leg Extension","Hip Abduction","Standing Calf Raise","Seated Calf Raise","Assisted Pull-Up"] },
-    4: { name: "Posterior Chain + Triceps", exercises: ["Deadlift","Romanian Deadlift","Tricep Pushdown","Good Mornings","Leg Curl","Cable Pull-Through","Back Extension","Reverse Hyperextension","Assisted Pull-Up"] },
-    5: { name: "Shoulders & Arms + Carries", exercises: ["Overhead Press","Arnold Press","Farmer's Carry","Rear Delt Fly","Barbell Curl","Hammer Curl","Skull Crushers","Tricep Dips","Assisted Pull-Up"] },
-    6: { name: "Full Body + Shoulder Isolation", exercises: ["Pull-Ups","Front Squat","Push Press","Lateral Raise","Pendlay Row","Goblet Squat","Ab Wheel Rollout","Pallof Press","Assisted Pull-Up"] }
+    3: { name: "Legs + Arms", exercises: ["Back Squat","Leg Extension","Leg Press","Hammer Curl","Bulgarian Split Squat","Hip Abduction","Standing Calf Raise","Seated Calf Raise","Assisted Pull-Up"] },
+    4: { name: "Posterior Chain + Triceps", exercises: ["Deadlift","Tricep Pushdown","Romanian Deadlift","Leg Curl","Good Mornings","Cable Pull-Through","Back Extension","Reverse Hyperextension","Assisted Pull-Up"] },
+    5: { name: "Shoulders & Arms + Carries", exercises: ["Overhead Press","Farmer's Carry","Arnold Press","Rear Delt Fly","Barbell Curl","Hammer Curl","Skull Crushers","Tricep Dips","Assisted Pull-Up"] },
+    6: { name: "Full Body + Shoulder Isolation", exercises: ["Pull-Ups","Front Squat","Lateral Raise","Push Press","Pendlay Row","Goblet Squat","Ab Wheel Rollout","Pallof Press","Assisted Pull-Up"] },
+    7: { name: "Abdominals", exercises: ["Dead Bug","Crunches","Stir the Pot","Weighted Plank Cable Rotation"] }
 };
 
-const EXERCISE_SETS = { 'Assisted Pull-Up': 3 };
+const EXERCISE_SETS = { 'Assisted Pull-Up': 3, 'Crunches': 3 };
+
+const DAY_TAB_ORDER = ['warmup', 1, 2, 3, 4, 5, 6, 7];
+const DAY_TAB_LABELS = { 7: 'Abs' };
 
 let currentDay = 1;
 let volumeChart = null;
@@ -215,7 +219,7 @@ function updateWarmupCountDisplay(log) {
 function loadWarmupValues() {
     const s = JSON.parse(localStorage.getItem('warmupValues') || '{}');
     document.getElementById('warmup-row').value  = s.row  || 10;
-    document.getElementById('warmup-sled').value = s.sled || 90;
+    document.getElementById('warmup-sled').value = s.sled || 40;
 }
 function saveWarmupValues() {
     localStorage.setItem('warmupValues', JSON.stringify({
@@ -271,13 +275,25 @@ function updateStreakDisplay() {
 
 function selectDay(day) {
     currentDay = day;
-    document.querySelectorAll('.day-tabs .tab').forEach((t, i) => t.classList.toggle('active', i + 1 === day));
-    renderWorkout(day);
+    document.querySelectorAll('.day-tabs .tab').forEach((t, i) => t.classList.toggle('active', DAY_TAB_ORDER[i] === day));
+
+    if (day === 'warmup') {
+        document.getElementById('day-label').textContent = 'Warmup';
+        hide('workout-section');
+        hide('save-btn');
+        show('warmup-section');
+    } else {
+        show('workout-section');
+        show('save-btn');
+        hide('warmup-section');
+        renderWorkout(day);
+    }
 }
 
 function renderWorkout(day) {
     const dayData = WORKOUT_DAYS[day];
-    document.getElementById('day-label').textContent = `Day ${day} — ${dayData.name}`;
+    const dayLabel = DAY_TAB_LABELS[day] || `Day ${day}`;
+    document.getElementById('day-label').textContent = `${dayLabel} — ${dayData.name}`;
     const section = document.getElementById('workout-section');
     section.innerHTML = '';
 
